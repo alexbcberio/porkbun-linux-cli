@@ -17,7 +17,7 @@ The following API endpoints are the ones that will be supported, the currently i
 - Domain
   - [ ] [Domain Update Name Servers](https://porkbun.com/api/json/v3/documentation#Domain%20Update%20Name%20Servers)
   - [ ] [Domain Get Name Servers](https://porkbun.com/api/json/v3/documentation#Domain%20Get%20Name%20Servers)
-  - [ ] [Domain List All](https://porkbun.com/api/json/v3/documentation#Domain%20List%20All)
+  - [x] [Domain List All](https://porkbun.com/api/json/v3/documentation#Domain%20List%20All)
   - [ ] [Domain Add Url Forward](https://porkbun.com/api/json/v3/documentation#Domain%20Add%20URL%20Forward)
   - [ ] [Domain Get URL Forwarding](https://porkbun.com/api/json/v3/documentation#Domain%20Get%20URL%20Forwarding)
   - [ ] [Domain Delete Url Forward](https://porkbun.com/api/json/v3/documentation#Domain%20Delete%20URL%20Forward)

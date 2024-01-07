@@ -8,7 +8,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # Environment file with API_KEY and SECRET_KEY
 ENV_FILE="$SCRIPT_DIR/.env"
-VERSION="0.1.0"
+VERSION="0.2.0"
 
 # Porkbun API base url
 BASE_URL=https://porkbun.com/api/json/v3
@@ -36,6 +36,9 @@ PARAM_PRIORITY_SHORT="-p"
 
 PARAM_ID="--id"
 PARAM_ID_SHORT="-i"
+
+PARAM_START="--start"
+PARAM_START_SHORT="-s"
 
 ###################################################
 #                                                 #
@@ -178,6 +181,80 @@ HANDLE_PING_IPV4="ping-ipv4"
 
 function ping_ipv4 {
   echo $(request "$BASE_URL_IPV4/ping")
+}
+
+# endregion
+
+###################################################
+#                                                 #
+#                      DOMAIN                     #
+#                                                 #
+###################################################
+
+# region: domain
+
+HANDLE_DOMAIN="domain"
+
+function handle_domain {
+  case $1 in
+    $DOMAIN_LIST_ALL)
+      shift
+
+      handle_show_help_on_error handle_domain_list_all $@
+      ;;
+    *)
+      handle_domain_help
+
+      exit 1
+      ;;
+  esac
+}
+
+function handle_domain_help {
+  echo "Usage: $0 $HANDLE_DOMAIN <command>"
+  echo
+  echo "Commands:"
+  echo "  $DOMAIN_LIST_ALL  List all domain names in account"
+}
+
+DOMAIN_LIST_ALL="list"
+
+function handle_domain_list_all {
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      $PARAM_START_SHORT|$PARAM_START)
+        START="$2"
+        shift
+        shift
+        ;;
+      -*|--*)
+        echo "Unknown option $1"
+
+        exit 1
+        ;;
+      *)
+        shift
+        ;;
+    esac
+  done
+
+  PAYLOAD=""
+
+  if [[ ! -z $START ]]; then
+    PAYLOAD="
+      \"start\": \"$START\"
+    "
+  fi
+
+  echo $(request "$BASE_URL/domain/listAll" "$PAYLOAD")
+}
+
+function handle_domain_list_all_help {
+  echo "Usage: $0 $HANDLE_DOMAIN $DOMAIN_LIST_ALL [OPTIONS]"
+  echo
+  echo "Options:"
+  echo "  $PARAM_START_SHORT, $PARAM_START (optional)"
+  echo "        An index to start at when retrieving the domains, defaults to 0. To get all domains increment by 1000 until you receive an empty array."
 }
 
 # endregion
@@ -386,6 +463,10 @@ function handle {
     $HANDLE_PING_IPV4)
       handle_show_help_on_error ping_ipv4
       ;;
+    $HANDLE_DOMAIN)
+      shift
+      handle_domain $@
+      ;;
     $HANDLE_DNS)
       shift
       handle_dns $@
@@ -404,6 +485,7 @@ function handle_help {
   echo "Commands:"
   echo "  $HANDLE_PING  Test communication with the API, also returns the IP address."
   echo "  $HANDLE_PING_IPV4  Test communication with the API, also returns the IP address in IPv4 format."
+  echo "  $HANDLE_DOMAIN  Manage account Domains"
   echo "  $HANDLE_DNS  Manage DNS records"
   echo
   echo "Version: v$VERSION"
