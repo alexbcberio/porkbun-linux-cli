@@ -1,0 +1,416 @@
+#!/bin/bash
+
+# Porkbun API docs
+# https://porkbun.com/api/json/v3/documentation
+#
+
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+# Environment file with API_KEY and SECRET_KEY
+ENV_FILE="$SCRIPT_DIR/.env"
+VERSION="0.1.0"
+
+# Porkbun API base url
+BASE_URL=https://porkbun.com/api/json/v3
+# Porkbun ipv4 API base url
+BASE_URL_IPV4=https://api-ipv4.porkbun.com/api/json/v3
+
+# Parameter values
+PARAM_DOMAIN="--domain"
+PARAM_DOMAIN_SHORT="-d"
+
+PARAM_NAME="--name"
+PARAM_NAME_SHORT="-n"
+
+PARAM_TYPE="--type"
+PARAM_TYPE_SHORT="-t"
+
+PARAM_CONTENT="--content"
+PARAM_CONTENT_SHORT="-c"
+
+PARAM_TTL="--ttl"
+PARAM_TTL_SHORT="-l"
+
+PARAM_PRIORITY="--priority"
+PARAM_PRIORITY_SHORT="-p"
+
+PARAM_ID="--id"
+PARAM_ID_SHORT="-i"
+
+###################################################
+#                                                 #
+#                     HELPERS                     #
+#                                                 #
+###################################################
+
+# region: helpers
+
+function load_env {
+  if [[ ! -f "$ENV_FILE" ]]; then
+    echo "Missing configuration file, starting configuration phase"
+    echo
+
+    read -p "Porkbun API key: " API_KEY
+    read -sp "Porkbun Secret key: " SECRET_KEY
+
+    echo
+    echo
+    echo "Checking valid keys"
+
+    PING_STATUS=$(ping | jq -r .status)
+    echo
+    echo $PING_STATUS
+
+    if [[ "$PING_STATUS" != "SUCCESS" ]]; then
+      echo "API keys are not valid"
+      exit 1
+    fi
+
+    echo "Keys are valid, saving credentials in $ENV_FILE"
+
+    create_env_file $API_KEY $SECRET_KEY
+
+    echo
+    echo "Credentials saved!"
+    echo
+    echo "The script is ready for use"
+
+    exit 0
+  fi
+
+  source "$ENV_FILE"
+
+  check_env
+}
+
+function create_env_file {
+  cat > "$ENV_FILE" << EOL
+# Porkbun API key
+API_KEY=$1
+# Porkbun SECRET API key
+SECRET_KEY=$2
+EOL
+
+  chmod 600 $ENV_FILE
+}
+
+function check_env {
+  if [[ -z $API_KEY ]]; then
+    echo "Missing API_KEY"
+
+    exit 1
+  fi
+
+  if [[ -z $SECRET_KEY ]]; then
+    echo "Missing SECRET_KEY"
+
+    exit 1
+  fi
+}
+
+function base_json_payload {
+  echo "
+    \"secretapikey\": \"$SECRET_KEY\",
+    \"apikey\": \"$API_KEY\"
+  "
+}
+
+function request {
+  URL=$1
+  PAYLOAD=$2
+
+  DATA="{$(base_json_payload)"
+
+  if [[ ! -z $PAYLOAD ]]; then
+    DATA="$DATA, $PAYLOAD"
+  fi
+
+  DATA="$DATA}"
+
+  echo $(
+    curl -s \
+    --request POST \
+    --url "$URL" \
+    --header 'Content-Type: application/json' \
+    --data "$DATA"
+  )
+}
+
+function handle_show_help_on_error {
+  COMMAND=$1
+  COMMAND_HELP="${COMMAND}_help"
+
+  shift
+
+  OUTPUT=$($COMMAND $@)
+
+  if [[ $? -ne 0 ]]; then
+    if [[ ! -z $OUTPUT ]]; then
+      echo $OUTPUT
+      echo
+    fi
+
+    eval $COMMAND_HELP
+
+    exit 1
+  fi
+
+  echo $OUTPUT | jq .
+}
+
+# endregion
+
+###################################################
+#                                                 #
+#                     GENERAL                     #
+#                                                 #
+###################################################
+
+# region: general
+
+HANDLE_PING="ping"
+
+function ping {
+  echo $(request "$BASE_URL/ping")
+}
+
+HANDLE_PING_IPV4="ping-ipv4"
+
+function ping_ipv4 {
+  echo $(request "$BASE_URL_IPV4/ping")
+}
+
+###################################################
+#                                                 #
+#                       DNS                       #
+#                                                 #
+###################################################
+
+HANDLE_DNS="dns"
+
+function handle_dns {
+  case $1 in
+    $DNS_CREATE_RECORD)
+      shift
+
+      handle_show_help_on_error dns_create_record $@
+      ;;
+    $DNS_DELETE_RECORD)
+      shift
+
+      handle_show_help_on_error dns_delete_record $@
+      ;;
+    *)
+      handle_dns_help
+
+      exit 1
+      ;;
+  esac
+}
+
+
+function handle_dns_help {
+  echo "Usage: $0 $HANDLE_DNS <command>"
+  echo
+  echo "Commands:"
+  echo "  $DNS_CREATE_RECORD  Create a DNS record"
+  echo "  $DNS_DELETE_RECORD  Delete a DNS record"
+}
+
+DNS_CREATE_RECORD="create"
+
+function dns_create_record {
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      $PARAM_DOMAIN_SHORT|$PARAM_DOMAIN)
+        DOMAIN="$2"
+        shift
+        shift
+        ;;
+      $PARAM_NAME_SHORT|$PARAM_NAME)
+        NAME="$2"
+        shift
+        shift
+        ;;
+      $PARAM_TYPE_SHORT|$PARAM_TYPE)
+        TYPE="$2"
+        shift
+        shift
+        ;;
+      $PARAM_CONTENT_SHORT|$PARAM_CONTENT)
+        CONTENT="$2"
+        shift
+        shift
+        ;;
+      $PARAM_TTL_SHORT|$PARAM_TTL)
+        TTL="$2"
+        shift
+        shift
+        ;;
+      $PARAM_PRIORITY_SHORT|$PARAM_PRIORITY)
+        PRIORITY="$2"
+        shift
+        shift
+        ;;
+      -*|--*)
+        echo "Unknown option $1"
+
+        exit 1
+        ;;
+      *)
+        shift
+        ;;
+    esac
+  done
+
+  if [[ -z $DOMAIN || -z $TYPE || -z $CONTENT ]]; then
+    echo "Missing domain, type, or content parameters"
+
+    exit 1
+  fi
+
+  PAYLOAD="
+    \"type\": \"$TYPE\",
+    \"content\": \"$CONTENT\"
+  "
+
+  if [[ ! -z $NAME ]]; then
+    PAYLOAD="
+      $PAYLOAD,
+      \"name\": \"$NAME\"
+    "
+  fi
+
+  if [[ ! -z $TTL ]]; then
+    PAYLOAD="
+      $PAYLOAD,
+      \"ttl\": \"$TTL\"
+    "
+  fi
+
+  if [[ ! -z $PRIORITY ]]; then
+    PAYLOAD="
+      $PAYLOAD,
+      \"prio\": \"$PRIORITY\"
+    "
+  fi
+
+  echo $(request "$BASE_URL/dns/create/$DOMAIN" "$PAYLOAD")
+}
+
+
+function dns_create_record_help {
+  echo "Usage: $0 $HANDLE_DNS $DNS_CREATE_RECORD [OPTIONS]"
+  echo
+  echo "Options:"
+  echo "  $PARAM_DOMAIN_SHORT, $PARAM_DOMAIN"
+  echo "        The domain for the record being created."
+  echo "  $PARAM_NAME_SHORT, $PARAM_NAME (optional)"
+  echo "        The subdomain for the record being created, not including the domain itself. Leave blank to create a record on the root domain. Use * to create a wildcard record."
+  echo "  $PARAM_TYPE_SHORT, $PARAM_TYPE"
+  echo "        The type of record being created. Valid types are: A, MX, CNAME, ALIAS, TXT, NS, AAAA, SRV, TLSA, CAA"
+  echo "  $PARAM_CONTENT_SHORT, $PARAM_CONTENT"
+  echo "        The answer content for the record. Please see the DNS management popup from the domain management console for proper formatting of each record type."
+  echo "  $PARAM_TTL_SHORT, $PARAM_TTL (optional)"
+  echo "        The time to live in seconds for the record. The minimum and the default is 600 seconds."
+  echo "  $PARAM_PRIORITY_SHORT, $PARAM_PRIORITY (optional)"
+  echo "        The priority of the record for those that support it."
+}
+
+DNS_DELETE_RECORD="delete"
+
+function dns_delete_record {
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      $PARAM_DOMAIN_SHORT|$PARAM_DOMAIN)
+        DOMAIN="$2"
+        shift
+        shift
+        ;;
+      $PARAM_ID_SHORT|$PARAM_ID)
+        ID="$2"
+        shift
+        shift
+        ;;
+      -*|--*)
+        echo "Unknown option $1"
+
+        exit 1
+        shift
+        shift
+        ;;
+      *)
+        shift
+        ;;
+    esac
+  done
+
+  if [[ -z $DOMAIN || -z $ID ]]; then
+    echo "Missing domain or record id"
+
+    exit 1
+  fi
+
+  echo $(request "$BASE_URL/dns/delete/$DOMAIN/$ID")
+}
+
+function dns_delete_record_help {
+  echo "Usage: $0 $HANDLE_DNS $DNS_DELETE_RECORD [OPTIONS]"
+  echo
+  echo "Options:"
+  echo "  $PARAM_DOMAIN_SHORT, $PARAM_DOMAIN"
+  echo "        The domain of the record being deleted."
+  echo "  $PARAM_ID_SHORT, $PARAM_ID"
+  echo "        The record id being deleted."
+}
+
+# endregion
+
+###################################################
+#                                                 #
+#                       MAIN                      #
+#                                                 #
+###################################################
+
+# region: main
+
+function handle {
+  case $1 in
+    $HANDLE_PING)
+      handle_show_help_on_error ping
+      ;;
+    $HANDLE_PING_IPV4)
+      handle_show_help_on_error ping_ipv4
+      ;;
+    $HANDLE_DNS)
+      shift
+      handle_dns $@
+      ;;
+    *)
+      handle_help
+
+      exit 1
+      ;;
+  esac
+}
+
+function handle_help {
+  echo "Usage: $0 <command>"
+  echo
+  echo "Commands:"
+  echo "  $HANDLE_PING  Test communication with the API, also returns the IP address."
+  echo "  $HANDLE_PING_IPV4  Test communication with the API, also returns the IP address in IPv4 format."
+  echo "  $HANDLE_DNS  Manage DNS records"
+  echo
+  echo "Version: v$VERSION"
+}
+
+load_env
+
+if [[ $? -ne 0 ]]; then
+  exit 1
+fi
+
+handle $@
+
+# endregion
