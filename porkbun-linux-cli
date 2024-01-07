@@ -180,11 +180,15 @@ function ping_ipv4 {
   echo $(request "$BASE_URL_IPV4/ping")
 }
 
+# endregion
+
 ###################################################
 #                                                 #
 #                       DNS                       #
 #                                                 #
 ###################################################
+
+# region: dns
 
 HANDLE_DNS="dns"
 
