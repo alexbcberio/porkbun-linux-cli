@@ -11,11 +11,14 @@ ENV_FILE="$SCRIPT_DIR/.env"
 VERSION="0.2.0"
 
 # Porkbun API base url
-BASE_URL=https://porkbun.com/api/json/v3
+BASE_URL=https://api.porkbun.com/api/json/v3
 # Porkbun ipv4 API base url
 BASE_URL_IPV4=https://api-ipv4.porkbun.com/api/json/v3
 
 # Parameter values
+PARAM_HELP="--help"
+PARAM_HELP_SHORT="-h"
+
 PARAM_DOMAIN="--domain"
 PARAM_DOMAIN_SHORT="-d"
 
@@ -145,6 +148,22 @@ function handle_show_help_on_error {
 
   shift
 
+  SHOW_HELP=0
+
+  for ARG in $@; do
+    case $ARG in
+      $PARAM_HELP_SHORT|$PARAM_HELP)
+        SHOW_HELP=1
+        ;;
+    esac
+  done
+
+  if [[ $SHOW_HELP -ne 0 ]]; then
+    eval $COMMAND_HELP
+
+    exit 0
+  fi
+
   OUTPUT=$($COMMAND $@)
 
   if [[ $? -ne 0 ]]; then
@@ -177,10 +196,20 @@ function ping {
   echo $(request "$BASE_URL/ping")
 }
 
+# TODO: implement method
+function ping_help {
+  echo "TODO"
+}
+
 HANDLE_PING_IPV4="ping-ipv4"
 
 function ping_ipv4 {
   echo $(request "$BASE_URL_IPV4/ping")
+}
+
+# TODO: implement method
+function ping_ipv4_help {
+  echo "TODO"
 }
 
 # endregion
@@ -197,6 +226,9 @@ HANDLE_DOMAIN="domain"
 
 function handle_domain {
   case $1 in
+    $PARAM_HELP_SHORT|$PARAM_HELP)
+      handle_domain_help
+      ;;
     $DOMAIN_LIST_ALL)
       shift
 
@@ -271,6 +303,9 @@ HANDLE_DNS="dns"
 
 function handle_dns {
   case $1 in
+    $PARAM_HELP_SHORT|$PARAM_HELP)
+      handle_dns_help
+      ;;
     $DNS_CREATE_RECORD)
       shift
 
@@ -457,6 +492,9 @@ function dns_delete_record_help {
 
 function handle {
   case $1 in
+    $PARAM_HELP_SHORT|$PARAM_HELP)
+      handle_help
+      ;;
     $HANDLE_PING)
       handle_show_help_on_error ping
       ;;
@@ -480,13 +518,17 @@ function handle {
 }
 
 function handle_help {
-  echo "Usage: $0 <command>"
+  echo "Usage: $0 <command> [ARGUMENTS]"
   echo
   echo "Commands:"
   echo "  $HANDLE_PING  Test communication with the API, also returns the IP address."
   echo "  $HANDLE_PING_IPV4  Test communication with the API, also returns the IP address in IPv4 format."
   echo "  $HANDLE_DOMAIN  Manage account Domains"
   echo "  $HANDLE_DNS  Manage DNS records"
+  echo
+  echo "Arguments:"
+  echo "  $PARAM_HELP_SHORT, $PARAM_HELP"
+  echo "        Show command help."
   echo
   echo "Version: v$VERSION"
 }
