@@ -196,20 +196,10 @@ function ping {
   echo $(request "$BASE_URL/ping")
 }
 
-# TODO: implement method
-function ping_help {
-  echo "TODO"
-}
-
 HANDLE_PING_IPV4="ping-ipv4"
 
 function ping_ipv4 {
   echo $(request "$BASE_URL_IPV4/ping")
-}
-
-# TODO: implement method
-function ping_ipv4_help {
-  echo "TODO"
 }
 
 # endregion
