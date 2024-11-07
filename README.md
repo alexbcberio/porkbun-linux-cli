@@ -23,7 +23,7 @@ The following API endpoints are the ones that will be supported, the currently i
   - [ ] [Domain Delete Url Forward](https://porkbun.com/api/json/v3/documentation#Domain%20Delete%20URL%20Forward)
 - DNS
   - [x] [DNS Create Record](https://porkbun.com/api/json/v3/documentation#DNS%20Create%20Record)
-  - [ ] [DNS Edit Record by Domain and ID](https://porkbun.com/api/json/v3/documentation#DNS%20Edit%20Record%20by%20Domain%20and%20ID)
+  - [x] [DNS Edit Record by Domain and ID](https://porkbun.com/api/json/v3/documentation#DNS%20Edit%20Record%20by%20Domain%20and%20ID)
   - [ ] [DNS Edit Records by Domain, Subdomain and Type](https://porkbun.com/api/json/v3/documentation#DNS%20Edit%20Record%20by%20Domain,%20Subdomain%20and%20Type)
   - [x] [DNS Delete Record by Domain and ID](https://porkbun.com/api/json/v3/documentation#DNS%20Delete%20Record%20by%20Domain%20and%20ID)
   - [ ] [DNS Delete Records by Domain, Subdomain and Type](https://porkbun.com/api/json/v3/documentation#DNS%20Delete%20Records%20by%20Domain,%20Subdomain%20and%20Type)

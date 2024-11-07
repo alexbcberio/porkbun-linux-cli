@@ -296,6 +296,11 @@ function handle_dns {
     $PARAM_HELP_SHORT|$PARAM_HELP)
       handle_dns_help
       ;;
+    $HANDLE_DNS_EDIT)
+      shift
+
+      handle_dns_edit $@
+      ;;
     $DNS_CREATE_RECORD)
       shift
 
@@ -320,7 +325,141 @@ function handle_dns_help {
   echo
   echo "Commands:"
   echo "  $DNS_CREATE_RECORD  Create a DNS record"
+  echo "  $HANDLE_DNS_EDIT    Edit DNS record(s)"
   echo "  $DNS_DELETE_RECORD  Delete a DNS record"
+}
+
+HANDLE_DNS_EDIT="edit"
+
+function handle_dns_edit {
+case $1 in
+    $PARAM_HELP_SHORT|$PARAM_HELP)
+      handle_dns_edit_help
+      ;;
+    $DNS_EDIT_RECORD)
+      shift
+      handle_show_help_on_error dns_edit_record $@
+      ;;
+    *)
+      handle_dns_edit_help
+
+      exit 1
+      ;;
+  esac
+}
+
+function handle_dns_edit_help {
+  echo "Usage: $0 $HANDLE_DNS $HANDLE_DNS_EDIT <command>"
+  echo
+  echo "Commands:"
+  echo "  $DNS_EDIT_RECORD   Edit a DNS record by Domain and ID"
+  echo "  $DNS_EDIT_RECORDS  Edit multiple DNS records"
+}
+
+DNS_EDIT_RECORD="record"
+
+function dns_edit_record {
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      $PARAM_DOMAIN_SHORT|$PARAM_DOMAIN)
+        DOMAIN="$2"
+        shift
+        shift
+        ;;
+      $PARAM_ID_SHORT|$PARAM_ID)
+        ID="$2"
+        shift
+        shift
+        ;;
+      $PARAM_NAME_SHORT|$PARAM_NAME)
+        NAME="$2"
+        shift
+        shift
+        ;;
+      $PARAM_TYPE_SHORT|$PARAM_TYPE)
+        TYPE="$2"
+        shift
+        shift
+        ;;
+      $PARAM_CONTENT_SHORT|$PARAM_CONTENT)
+        CONTENT="$2"
+        shift
+        shift
+        ;;
+      $PARAM_TTL_SHORT|$PARAM_TTL)
+        TTL="$2"
+        shift
+        shift
+        ;;
+      $PARAM_PRIORITY_SHORT|$PARAM_PRIORITY)
+        PRIORITY="$2"
+        shift
+        shift
+        ;;
+      -*|--*)
+        echo "Unknown option $1"
+
+        exit 1
+        ;;
+      *)
+        shift
+        ;;
+    esac
+  done
+
+  if [[ -z $DOMAIN || -z $ID || -z $TYPE || -z $CONTENT ]]; then
+    echo "Missing domain, id, type, or content parameters"
+
+    exit 1
+  fi
+
+  PAYLOAD="
+    \"type\": \"$TYPE\",
+    \"content\": \"$CONTENT\"
+  "
+
+  if [[ ! -z $NAME ]]; then
+    PAYLOAD="
+      $PAYLOAD,
+      \"name\": \"$NAME\"
+    "
+  fi
+
+  if [[ ! -z $TTL ]]; then
+    PAYLOAD="
+      $PAYLOAD,
+      \"ttl\": \"$TTL\"
+    "
+  fi
+
+  if [[ ! -z $PRIORITY ]]; then
+    PAYLOAD="
+      $PAYLOAD,
+      \"prio\": \"$PRIORITY\"
+    "
+  fi
+
+  echo $(request "$BASE_URL/dns/edit/$DOMAIN/$ID" "$PAYLOAD")
+}
+
+function dns_edit_record_help {
+  echo "Usage: $0 $HANDLE_DNS $HANDLE_DNS_EDIT $DNS_EDIT_RECORD [OPTIONS]"
+  echo
+  echo "Options:"
+  echo "  $PARAM_DOMAIN_SHORT, $PARAM_DOMAIN"
+  echo "        The domain for the record being created."
+  echo "  $PARAM_ID_SHORT, $PARAM_ID"
+  echo "        The ID of the record."
+  echo "  $PARAM_NAME_SHORT, $PARAM_NAME (optional)"
+  echo "        The subdomain for the record being created, not including the domain itself. Leave blank to create a record on the root domain. Use * to create a wildcard record."
+  echo "  $PARAM_TYPE_SHORT, $PARAM_TYPE"
+  echo "        The type of record being created. Valid types are: A, MX, CNAME, ALIAS, TXT, NS, AAAA, SRV, TLSA, CAA"
+  echo "  $PARAM_CONTENT_SHORT, $PARAM_CONTENT"
+  echo "        The answer content for the record. Please see the DNS management popup from the domain management console for proper formatting of each record type."
+  echo "  $PARAM_TTL_SHORT, $PARAM_TTL (optional)"
+  echo "        The time to live in seconds for the record. The minimum and the default is 600 seconds."
+  echo "  $PARAM_PRIORITY_SHORT, $PARAM_PRIORITY (optional)"
+  echo "        The priority of the record for those that support it."
 }
 
 DNS_CREATE_RECORD="create"
