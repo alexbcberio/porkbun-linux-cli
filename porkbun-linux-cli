@@ -8,7 +8,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # Environment file with API_KEY and SECRET_KEY
 ENV_FILE="$SCRIPT_DIR/.env"
-VERSION="0.2.0"
+VERSION="0.3.0"
 
 # Porkbun API base url
 BASE_URL=https://api.porkbun.com/api/json/v3
@@ -338,7 +338,13 @@ case $1 in
       ;;
     $DNS_EDIT_RECORD)
       shift
+
       handle_show_help_on_error dns_edit_record $@
+      ;;
+    $DNS_EDIT_RECORDS)
+      shift
+
+      handle_show_help_on_error dns_edit_records $@
       ;;
     *)
       handle_dns_edit_help
@@ -353,7 +359,7 @@ function handle_dns_edit_help {
   echo
   echo "Commands:"
   echo "  $DNS_EDIT_RECORD   Edit a DNS record by Domain and ID"
-  echo "  $DNS_EDIT_RECORDS  Edit multiple DNS records"
+  echo "  $DNS_EDIT_RECORDS  Edit DNS records by Domain, Subdomain, and Type"
 }
 
 DNS_EDIT_RECORD="record"
@@ -462,6 +468,103 @@ function dns_edit_record_help {
   echo "        The priority of the record for those that support it."
 }
 
+DNS_EDIT_RECORDS="records"
+
+function dns_edit_records {
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      $PARAM_DOMAIN_SHORT|$PARAM_DOMAIN)
+        DOMAIN="$2"
+        shift
+        shift
+        ;;
+      $PARAM_TYPE_SHORT|$PARAM_TYPE)
+        TYPE="$2"
+        shift
+        shift
+        ;;
+      $PARAM_NAME_SHORT|$PARAM_NAME)
+        NAME="$2"
+        shift
+        shift
+        ;;
+      $PARAM_CONTENT_SHORT|$PARAM_CONTENT)
+        CONTENT="$2"
+        shift
+        shift
+        ;;
+      $PARAM_TTL_SHORT|$PARAM_TTL)
+        TTL="$2"
+        shift
+        shift
+        ;;
+      $PARAM_PRIORITY_SHORT|$PARAM_PRIORITY)
+        PRIORITY="$2"
+        shift
+        shift
+        ;;
+      -*|--*)
+        echo "Unknown option $1"
+
+        exit 1
+        ;;
+      *)
+        shift
+        ;;
+    esac
+  done
+
+  if [[ -z $DOMAIN || -z $TYPE || -z $CONTENT ]]; then
+    echo "Missing domain, type, or content parameters"
+
+    exit 1
+  fi
+
+  URL="$BASE_URL/dns/editByNameType/$DOMAIN/$TYPE"
+
+  PAYLOAD="
+    \"content\": \"$CONTENT\"
+  "
+
+  if [[ ! -z $NAME ]]; then
+    URL="$URL/$NAME"
+  fi
+
+  if [[ ! -z $TTL ]]; then
+    PAYLOAD="
+      $PAYLOAD,
+      \"ttl\": \"$TTL\"
+    "
+  fi
+
+  if [[ ! -z $PRIORITY ]]; then
+    PAYLOAD="
+      $PAYLOAD,
+      \"prio\": \"$PRIORITY\"
+    "
+  fi
+
+  echo $(request "$URL" "$PAYLOAD")
+}
+
+function dns_edit_records_help {
+  echo "Usage: $0 $HANDLE_DNS $HANDLE_DNS_EDIT $DNS_EDIT_RECORDS [OPTIONS]"
+  echo
+  echo "Options:"
+  echo "  $PARAM_DOMAIN_SHORT, $PARAM_DOMAIN"
+  echo "        The domain for the record being created."
+  echo "  $PARAM_TYPE_SHORT, $PARAM_TYPE"
+  echo "        The type of record being created. Valid types are: A, MX, CNAME, ALIAS, TXT, NS, AAAA, SRV, TLSA, CAA"
+  echo "  $PARAM_NAME_SHORT, $PARAM_NAME (optional)"
+  echo "        The subdomain for the record being created, not including the domain itself. Leave blank to create a record on the root domain. Use * to create a wildcard record."
+  echo "  $PARAM_CONTENT_SHORT, $PARAM_CONTENT"
+  echo "        The answer content for the record. Please see the DNS management popup from the domain management console for proper formatting of each record type."
+  echo "  $PARAM_TTL_SHORT, $PARAM_TTL (optional)"
+  echo "        The time to live in seconds for the record. The minimum and the default is 600 seconds."
+  echo "  $PARAM_PRIORITY_SHORT, $PARAM_PRIORITY (optional)"
+  echo "        The priority of the record for those that support it."
+}
+
 DNS_CREATE_RECORD="create"
 
 function dns_create_record {
@@ -542,7 +645,6 @@ function dns_create_record {
 
   echo $(request "$BASE_URL/dns/create/$DOMAIN" "$PAYLOAD")
 }
-
 
 function dns_create_record_help {
   echo "Usage: $0 $HANDLE_DNS $DNS_CREATE_RECORD [OPTIONS]"
