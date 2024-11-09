@@ -326,7 +326,7 @@ function handle_dns_help {
   echo "Commands:"
   echo "  $DNS_CREATE_RECORD  Create a DNS record"
   echo "  $HANDLE_DNS_EDIT    Edit DNS record(s)"
-  echo "  $DNS_DELETE_RECORD  Delete a DNS record"
+  echo "  $HANDLE_DNS_DELETE  Delete a DNS record"
 }
 
 HANDLE_DNS_EDIT="edit"
