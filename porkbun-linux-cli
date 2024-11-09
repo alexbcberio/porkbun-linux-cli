@@ -676,6 +676,11 @@ case $1 in
 
       handle_show_help_on_error dns_delete_record $@
       ;;
+    $DNS_DELETE_RECORDS)
+      shift
+
+      handle_show_help_on_error dns_delete_records $@
+      ;;
     *)
       handle_dns_delete_help
 
@@ -689,6 +694,7 @@ function handle_dns_delete_help {
   echo
   echo "Commands:"
   echo "  $DNS_DELETE_RECORD   Delete a DNS record by Domain and ID"
+  echo "  $DNS_DELETE_RECORDS  Delete DNS records by Domain, Subdomain, and Type"
 }
 
 DNS_DELETE_RECORD="record"
@@ -736,6 +742,67 @@ function dns_delete_record_help {
   echo "        The domain of the record being deleted."
   echo "  $PARAM_ID_SHORT, $PARAM_ID"
   echo "        The record id being deleted."
+}
+
+DNS_DELETE_RECORDS="records"
+
+function dns_delete_records {
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      $PARAM_DOMAIN_SHORT|$PARAM_DOMAIN)
+        DOMAIN="$2"
+        shift
+        shift
+        ;;
+      $PARAM_TYPE_SHORT|$PARAM_TYPE)
+        TYPE="$2"
+        shift
+        shift
+        ;;
+      $PARAM_NAME_SHORT|$PARAM_NAME)
+        NAME="$2"
+        shift
+        shift
+        ;;
+      -*|--*)
+        echo "Unknown option $1"
+
+        exit 1
+        ;;
+      *)
+        shift
+        ;;
+    esac
+  done
+
+  if [[ -z $DOMAIN || -z $TYPE ]]; then
+    echo "Missing domain or type parameters"
+
+    exit 1
+  fi
+
+  URL="$BASE_URL/dns/deleteByNameType/$DOMAIN/$TYPE"
+
+  PAYLOAD=""
+
+  if [[ ! -z $NAME ]]; then
+    URL="$URL/$NAME"
+  fi
+
+  echo $(request "$URL" "$PAYLOAD")
+}
+
+function dns_delete_records_help {
+  echo "Usage: $0 $HANDLE_DNS $HANDLE_DNS_EDIT $DNS_EDIT_RECORDS [OPTIONS]"
+  echo
+  echo "Options:"
+  echo "  $PARAM_DOMAIN_SHORT, $PARAM_DOMAIN"
+  echo "        The domain for the record being created."
+  echo "  $PARAM_TYPE_SHORT, $PARAM_TYPE"
+  echo "        The type of record being created. Valid types are: A, MX, CNAME, ALIAS, TXT, NS, AAAA, SRV, TLSA, CAA"
+  echo "  $PARAM_NAME_SHORT, $PARAM_NAME (optional)"
+  echo "        The subdomain for the record being created, not including the domain itself. Leave blank to create a record on the root domain. Use * to create a wildcard record."
+  echo "  $PARAM_CONTENT_SHORT, $PARAM_CONTENT"
 }
 
 # endregion
