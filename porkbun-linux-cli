@@ -822,6 +822,11 @@ case $1 in
 
       handle_show_help_on_error dns_list_record $@
       ;;
+    $DNS_LIST_RECORDS)
+      shift
+
+      handle_show_help_on_error dns_list_records $@
+      ;;
     *)
       handle_dns_list_help
 
@@ -835,6 +840,7 @@ function handle_dns_list_help {
   echo
   echo "Commands:"
   echo "  $DNS_LIST_RECORD   List a DNS record by Domain and ID"
+  echo "  $DNS_LIST_RECORDS  List DNS records by Domain, Subdomain, and Type"
 }
 
 DNS_LIST_RECORD="record"
@@ -890,6 +896,66 @@ function dns_list_record_help {
   echo "        The domain to list records from."
   echo "  $PARAM_ID_SHORT, $PARAM_ID (optional)"
   echo "        The ID of the record."
+}
+
+DNS_LIST_RECORDS="records"
+
+function dns_list_records {
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      $PARAM_DOMAIN_SHORT|$PARAM_DOMAIN)
+        DOMAIN="$2"
+        shift
+        shift
+        ;;
+      $PARAM_TYPE_SHORT|$PARAM_TYPE)
+        TYPE="$2"
+        shift
+        shift
+        ;;
+      $PARAM_NAME_SHORT|$PARAM_NAME)
+        NAME="$2"
+        shift
+        shift
+        ;;
+      -*|--*)
+        echo "Unknown option $1"
+
+        exit 1
+        ;;
+      *)
+        shift
+        ;;
+    esac
+  done
+
+  if [[ -z $DOMAIN || -z $TYPE ]]; then
+    echo "Missing domain or type parameters"
+
+    exit 1
+  fi
+
+  URL="$BASE_URL/dns/retrieveByNameType/$DOMAIN/$TYPE"
+
+  PAYLOAD=""
+
+  if [[ ! -z $NAME ]]; then
+    URL="$URL/$NAME"
+  fi
+
+  echo $(request "$URL" "$PAYLOAD")
+}
+
+function dns_list_records_help {
+  echo "Usage: $0 $HANDLE_DNS $HANDLE_DNS_LIST $DNS_LIST_RECORDS [OPTIONS]"
+  echo
+  echo "Options:"
+  echo "  $PARAM_DOMAIN_SHORT, $PARAM_DOMAIN"
+  echo "        The domain of the records being listed."
+  echo "  $PARAM_TYPE_SHORT, $PARAM_TYPE"
+  echo "        The type of record being listed. Valid types are: A, MX, CNAME, ALIAS, TXT, NS, AAAA, SRV, TLSA, CAA"
+  echo "  $PARAM_NAME_SHORT, $PARAM_NAME (optional)"
+  echo "        The subdomain of the record being listed, not including the domain itself."
 }
 
 # endregion

@@ -28,7 +28,7 @@ The following API endpoints are the ones that will be supported, the currently i
   - [x] [DNS Delete Record by Domain and ID](https://porkbun.com/api/json/v3/documentation#DNS%20Delete%20Record%20by%20Domain%20and%20ID)
   - [x] [DNS Delete Records by Domain, Subdomain and Type](https://porkbun.com/api/json/v3/documentation#DNS%20Delete%20Records%20by%20Domain,%20Subdomain%20and%20Type)
   - [x] [DNS Retrieve Records by Domain or ID](https://porkbun.com/api/json/v3/documentation#DNS%20Retrieve%20Records%20by%20Domain%20or%20ID)
-  - [ ] [DNS Retrieve Records by Domain, Subdomain and Type](https://porkbun.com/api/json/v3/documentation#DNS%20Retrieve%20Records%20by%20Domain,%20Subdomain%20and%20Type)
+  - [x] [DNS Retrieve Records by Domain, Subdomain and Type](https://porkbun.com/api/json/v3/documentation#DNS%20Retrieve%20Records%20by%20Domain,%20Subdomain%20and%20Type)
 
 ## Usage
 
