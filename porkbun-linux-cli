@@ -306,10 +306,10 @@ function handle_dns {
 
       handle_show_help_on_error dns_create_record $@
       ;;
-    $DNS_DELETE_RECORD)
+    $HANDLE_DNS_DELETE)
       shift
 
-      handle_show_help_on_error dns_delete_record $@
+      handle_dns_delete $@
       ;;
     *)
       handle_dns_help
@@ -664,7 +664,34 @@ function dns_create_record_help {
   echo "        The priority of the record for those that support it."
 }
 
-DNS_DELETE_RECORD="delete"
+HANDLE_DNS_DELETE="delete"
+
+function handle_dns_delete {
+case $1 in
+    $PARAM_HELP_SHORT|$PARAM_HELP)
+      handle_dns_delete_help
+      ;;
+    $DNS_DELETE_RECORD)
+      shift
+
+      handle_show_help_on_error dns_delete_record $@
+      ;;
+    *)
+      handle_dns_delete_help
+
+      exit 1
+      ;;
+  esac
+}
+
+function handle_dns_delete_help {
+  echo "Usage: $0 $HANDLE_DNS $HANDLE_DNS_DELETE <command>"
+  echo
+  echo "Commands:"
+  echo "  $DNS_DELETE_RECORD   Delete a DNS record by Domain and ID"
+}
+
+DNS_DELETE_RECORD="record"
 
 function dns_delete_record {
   while [[ $# -gt 0 ]]; do
