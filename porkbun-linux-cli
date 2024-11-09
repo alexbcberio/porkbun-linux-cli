@@ -732,7 +732,7 @@ function dns_delete_record {
   done
 
   if [[ -z $DOMAIN || -z $ID ]]; then
-    echo "Missing domain or record id"
+    echo "Missing domain or record id parameters"
 
     exit 1
   fi
