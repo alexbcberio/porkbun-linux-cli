@@ -8,7 +8,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # Environment file with API_KEY and SECRET_KEY
 ENV_FILE="$SCRIPT_DIR/.env"
-VERSION="0.4.0"
+VERSION="0.4.1"
 
 # Porkbun API base url
 BASE_URL=https://api.porkbun.com/api/json/v3
@@ -331,7 +331,7 @@ function handle_dns_help {
   echo "Commands:"
   echo "  $DNS_CREATE_RECORD  Create a DNS record"
   echo "  $HANDLE_DNS_EDIT    Edit DNS record(s)"
-  echo "  $HANDLE_DNS_DELETE  Delete a DNS record"
+  echo "  $HANDLE_DNS_DELETE  Delete DNS record(s)"
   echo "  $HANDLE_DNS_LIST    List DNS record(s)"
 }
 
@@ -459,13 +459,13 @@ function dns_edit_record_help {
   echo
   echo "Options:"
   echo "  $PARAM_DOMAIN_SHORT, $PARAM_DOMAIN"
-  echo "        The domain for the record being created."
+  echo "        The domain of the record being edited."
   echo "  $PARAM_ID_SHORT, $PARAM_ID"
   echo "        The ID of the record."
   echo "  $PARAM_NAME_SHORT, $PARAM_NAME (optional)"
-  echo "        The subdomain for the record being created, not including the domain itself. Leave blank to create a record on the root domain. Use * to create a wildcard record."
+  echo "        The subdomain of the record being edited, not including the domain itself. Leave blank to edit a record on the root domain. Use * to edit a wildcard record."
   echo "  $PARAM_TYPE_SHORT, $PARAM_TYPE"
-  echo "        The type of record being created. Valid types are: A, MX, CNAME, ALIAS, TXT, NS, AAAA, SRV, TLSA, CAA"
+  echo "        The type of record being edited. Valid types are: A, MX, CNAME, ALIAS, TXT, NS, AAAA, SRV, TLSA, CAA"
   echo "  $PARAM_CONTENT_SHORT, $PARAM_CONTENT"
   echo "        The answer content for the record. Please see the DNS management popup from the domain management console for proper formatting of each record type."
   echo "  $PARAM_TTL_SHORT, $PARAM_TTL (optional)"
@@ -558,11 +558,11 @@ function dns_edit_records_help {
   echo
   echo "Options:"
   echo "  $PARAM_DOMAIN_SHORT, $PARAM_DOMAIN"
-  echo "        The domain for the record being created."
+  echo "        The domain of the record being edited."
   echo "  $PARAM_TYPE_SHORT, $PARAM_TYPE"
-  echo "        The type of record being created. Valid types are: A, MX, CNAME, ALIAS, TXT, NS, AAAA, SRV, TLSA, CAA"
+  echo "        The type of record being edited. Valid types are: A, MX, CNAME, ALIAS, TXT, NS, AAAA, SRV, TLSA, CAA"
   echo "  $PARAM_NAME_SHORT, $PARAM_NAME (optional)"
-  echo "        The subdomain for the record being created, not including the domain itself. Leave blank to create a record on the root domain. Use * to create a wildcard record."
+  echo "        The subdomain of the record being edited, not including the domain itself. Leave blank to edit a record on the root domain. Use * to edit a wildcard record."
   echo "  $PARAM_CONTENT_SHORT, $PARAM_CONTENT"
   echo "        The answer content for the record. Please see the DNS management popup from the domain management console for proper formatting of each record type."
   echo "  $PARAM_TTL_SHORT, $PARAM_TTL (optional)"
@@ -839,8 +839,8 @@ function handle_dns_list_help {
   echo "Usage: $0 $HANDLE_DNS $HANDLE_DNS_LIST <command>"
   echo
   echo "Commands:"
-  echo "  $DNS_LIST_RECORD   List a DNS record by Domain and ID"
-  echo "  $DNS_LIST_RECORDS  List DNS records by Domain, Subdomain, and Type"
+  echo "  $DNS_LIST_RECORD   List DNS records by Domain and ID"
+  echo "  $DNS_LIST_RECORDS  List DNS records by Domain, Type, and Subdomain"
 }
 
 DNS_LIST_RECORD="record"

@@ -33,7 +33,7 @@ The following API endpoints are the ones that will be supported, the currently i
 ## Usage
 
 1. Create API keys for your account, on [Account > API Access](https://porkbun.com/account/api)
-2. Enable "API Access" on the domains, press on "Details" and check the "API Access" settings on the desires domains.
+2. Enable "API Access" on the domains, press on "Details" and check the "API Access" settings on the desired domains.
 3. Execute the script, it will prompt for your API credentials the first time you launch it. The configuration file is saved on the same location as is the script.
 
    > The generated file is in plain text, with 600 (rw-------) permission.
