@@ -311,6 +311,11 @@ function handle_dns {
 
       handle_dns_delete $@
       ;;
+    $HANDLE_DNS_LIST)
+      shift
+
+      handle_dns_list $@
+      ;;
     *)
       handle_dns_help
 
@@ -327,6 +332,7 @@ function handle_dns_help {
   echo "  $DNS_CREATE_RECORD  Create a DNS record"
   echo "  $HANDLE_DNS_EDIT    Edit DNS record(s)"
   echo "  $HANDLE_DNS_DELETE  Delete a DNS record"
+  echo "  $HANDLE_DNS_LIST    List DNS record(s)"
 }
 
 HANDLE_DNS_EDIT="edit"
@@ -803,6 +809,78 @@ function dns_delete_records_help {
   echo "  $PARAM_NAME_SHORT, $PARAM_NAME (optional)"
   echo "        The subdomain for the record being created, not including the domain itself. Leave blank to create a record on the root domain. Use * to create a wildcard record."
   echo "  $PARAM_CONTENT_SHORT, $PARAM_CONTENT"
+}
+
+HANDLE_DNS_LIST="list"
+
+function handle_dns_list {
+case $1 in
+    $PARAM_HELP_SHORT|$PARAM_HELP)
+      handle_dns_list_help
+      ;;
+    $DNS_LIST_RECORD)
+      shift
+
+      handle_show_help_on_error dns_list_record $@
+      ;;
+    *)
+      handle_dns_list_help
+
+      exit 1
+      ;;
+  esac
+}
+
+function handle_dns_list_help {
+  echo "Usage: $0 $HANDLE_DNS $HANDLE_DNS_LIST <command>"
+  echo
+  echo "Commands:"
+  echo "  $DNS_LIST_RECORD   List a DNS record by Domain and ID"
+}
+
+DNS_LIST_RECORD="record"
+
+function dns_list_record {
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      $PARAM_DOMAIN_SHORT|$PARAM_DOMAIN)
+        DOMAIN="$2"
+        shift
+        shift
+        ;;
+      $PARAM_ID_SHORT|$PARAM_ID)
+        ID="$2"
+        shift
+        shift
+        ;;
+      -*|--*)
+        echo "Unknown option $1"
+
+        exit 1
+        shift
+        shift
+        ;;
+      *)
+        shift
+        ;;
+    esac
+  done
+
+  if [[ -z $DOMAIN ]]; then
+    echo "Missing domain parameter"
+
+    exit 1
+  fi
+
+  URL="$BASE_URL/dns/retrieve/$DOMAIN"
+
+  PAYLOAD=""
+
+  if [[ ! -z $ID ]]; then
+    URL="$URL/$ID"
+  fi
+
+  echo $(request "$URL" "$PAYLOAD")
 }
 
 # endregion
