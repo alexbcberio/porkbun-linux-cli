@@ -803,12 +803,11 @@ function dns_delete_records_help {
   echo
   echo "Options:"
   echo "  $PARAM_DOMAIN_SHORT, $PARAM_DOMAIN"
-  echo "        The domain for the record being created."
+  echo "        The domain of the record being deleted."
   echo "  $PARAM_TYPE_SHORT, $PARAM_TYPE"
-  echo "        The type of record being created. Valid types are: A, MX, CNAME, ALIAS, TXT, NS, AAAA, SRV, TLSA, CAA"
+  echo "        The type of record being deleted. Valid types are: A, MX, CNAME, ALIAS, TXT, NS, AAAA, SRV, TLSA, CAA"
   echo "  $PARAM_NAME_SHORT, $PARAM_NAME (optional)"
-  echo "        The subdomain for the record being created, not including the domain itself. Leave blank to create a record on the root domain. Use * to create a wildcard record."
-  echo "  $PARAM_CONTENT_SHORT, $PARAM_CONTENT"
+  echo "        The subdomain of the record being deleted."
 }
 
 HANDLE_DNS_LIST="list"
