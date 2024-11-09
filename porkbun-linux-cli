@@ -8,7 +8,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # Environment file with API_KEY and SECRET_KEY
 ENV_FILE="$SCRIPT_DIR/.env"
-VERSION="0.3.0"
+VERSION="0.4.0"
 
 # Porkbun API base url
 BASE_URL=https://api.porkbun.com/api/json/v3
