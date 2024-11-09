@@ -883,6 +883,16 @@ function dns_list_record {
   echo $(request "$URL" "$PAYLOAD")
 }
 
+function dns_list_record_help {
+  echo "Usage: $0 $HANDLE_DNS $HANDLE_DNS_LIST $DNS_LIST_RECORD [OPTIONS]"
+  echo
+  echo "Options:"
+  echo "  $PARAM_DOMAIN_SHORT, $PARAM_DOMAIN"
+  echo "        The domain to list records from."
+  echo "  $PARAM_ID_SHORT, $PARAM_ID (optional)"
+  echo "        The ID of the record."
+}
+
 # endregion
 
 ###################################################
